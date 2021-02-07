@@ -31,7 +31,7 @@ class PostgresDB(Database):
         self.cur.execute('DROP TABLE tmp_log')        
         self.cur.execute(f'SELECT message FROM postgres_log WHERE user_name=\'{self.uconn.info.user}\'')
 
-        return self.cur.fetchall()
+        return [row[0].replace('duration: ', '') for row in self.cur.fetchall() if 'duration: ' in row[0]]
 
 
 class MysqlDB(Database):
