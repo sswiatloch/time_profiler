@@ -28,8 +28,12 @@ class PostgresDB(Database):
         self.cur.execute('CREATE TEMP TABLE tmp_log AS SELECT * FROM postgres_log WITH NO DATA')
         self.cur.execute('COPY tmp_log FROM \'C:/Program Files/PostgreSQL/13/data/log/logfile.csv\' DELIMITERS \',\' CSV')
         self.cur.execute('INSERT INTO postgres_log SELECT * FROM tmp_log ON CONFLICT DO NOTHING')
-        self.cur.execute('DROP TABLE tmp_log')        
-        self.cur.execute(f'SELECT message FROM postgres_log WHERE user_name=\'{self.uconn.info.user}\'')
+        self.cur.execute('DROP TABLE tmp_log')
+        query = f'SELECT message FROM postgres_log WHERE log_time >=\'{self.timestamp}\' AND '
+        query += f'user_name=\'{self.uconn.info.user}\' AND '
+        query += f'database_name=\'{self.uconn.info.dbname}\' AND '
+        query += f'process_id={self.pid}'
+        self.cur.execute(query)
 
         return [row[0].replace('duration: ', '') for row in self.cur.fetchall() if 'duration: ' in row[0]]
 
