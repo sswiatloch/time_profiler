@@ -1,5 +1,7 @@
 from enum import Enum
 import databases as db
+from functools import update_wrapper
+import time
 
 
 class DBTypes(Enum):
@@ -16,28 +18,64 @@ class DatabaseFactory:
             return db.MysqlDB(conn)
 
 
-class TimeProfiler:
-    def get_instance(self):
-        pass
+class TimeProfilerMeta(type):
+    _instances = {}
 
-    def register_connection(self):
-        pass
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            instance = super().__call__(*args, **kwargs)
+            cls._instances[cls] = instance
+        return cls._instances[cls]
 
-    def reqister_time(self, func_name, time, dbtype):
-        pass
+
+class TimeProfiler(metaclass=TimeProfilerMeta):
+    def __init__(self):
+        self.logs = []
+
+    def register_connection(self, conn, dbtype):
+        self.db = DatabaseFactory.create(conn, dbtype)
+
+    def register_time(self, func_name, time, reg_type):
+        self.logs.append((func_name, time, reg_type))
+
+    def show_logs(self):
+        for log in self.logs:
+            print(log)
 
 
 class TimeQuerry:
     def __init__(self, func):
-        pass
+        update_wrapper(self, func)
+        self.func = func
+        self.tprof = TimeProfiler()
 
     def __call__(self, *args, **kwargs):
-        pass
+        if self.tprof.db is None:
+            print("There is no connection registered! Failed to time query/queries")
+            return self.func(*args, **kwargs)
+        else:
+            self.tprof.db.set_timestamp()
+            value = self.func(*args, **kwargs)
+            times = self.tprof.db.get_query_time()
+            for time in times:
+                print(f"Query in {self.func.__name__!r} finished in {time}")
+            return value
 
 
 class TimeExecution:
     def __init__(self, func):
-        pass
+        update_wrapper(self, func)
+        self.func = func
+        self.tprof = TimeProfiler()
 
     def __call__(self, *args, **kwargs):
-        pass
+        start_time = time.perf_counter()
+        value = self.func(*args, **kwargs)
+        end_time = time.perf_counter()
+        run_time = end_time - start_time
+        print(f"Finished {self.func.__name__!r} in {run_time:.4f} secs")
+        return value
+
+
+if __name__ == "__main__":
+    print("yay!")
