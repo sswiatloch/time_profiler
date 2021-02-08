@@ -1,4 +1,5 @@
 import psycopg2
+import mysql.connector as mc
 from datetime import datetime
 
 
@@ -37,4 +38,19 @@ class PostgresDB(Database):
 
 
 class MysqlDB(Database):
-    pass
+    def __init__(self, uconn, password):
+        self.pid = uconn.connection_id
+        self.uconn = uconn
+        # self.conn = mc.connect(user=uconn.user, password=password,
+        #                        database=uconn.database, host=uconn.server_host, port=uconn.server_port)
+        self.cur = uconn.cursor()
+        self.timestamp = datetime.now()
+
+    def get_query_time(self):
+        # SELECT start_time, sql_text, query_time FROM mysql.slow_log WHERE user_host LIKE '%" +
+        #             user + "%' AND start_time >= '" + invoke_start + "';"
+        query = f'SELECT query_time FROM mysql.slow_log WHERE user_host LIKE \'{self.uconn.user}%\' '
+        query += f'AND db = \'{self.uconn.database}\' AND thread_id = {self.pid} '
+        query += f'AND start_time >= \'{self.timestamp}\''
+        self.cur.execute(query)
+        return [row for row in self.cur]

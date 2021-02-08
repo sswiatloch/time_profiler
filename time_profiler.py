@@ -11,11 +11,11 @@ class DBTypes(Enum):
 
 class DatabaseFactory:
     @staticmethod
-    def create(conn, dbtype):
+    def create(conn, dbtype, password=''):
         if dbtype == DBTypes.POSTGRES:
             return db.PostgresDB(conn)
         elif dbtype == DBTypes.MYSQL:
-            return db.MysqlDB(conn)
+            return db.MysqlDB(conn, password)
 
 
 class TimeProfilerMeta(type):
@@ -32,8 +32,8 @@ class TimeProfiler(metaclass=TimeProfilerMeta):
     def __init__(self):
         self.logs = []
 
-    def register_connection(self, conn, dbtype):
-        self.db = DatabaseFactory.create(conn, dbtype)
+    def register_connection(self, conn, dbtype, password=''):
+        self.db = DatabaseFactory.create(conn, dbtype, password='')
 
     def register_time(self, func_name, time, reg_type):
         self.logs.append((func_name, time, reg_type))
