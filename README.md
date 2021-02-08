@@ -44,3 +44,16 @@ CREATE TABLE postgres_log
 GRANT pg_read_server_files TO {user};
 GRANT ALL PRIVILEGES ON postgres_log TO {user};
 ```
+
+# Przygotowanie bazy MySQL
+W wierszu poleceń MySQL wykonaj:
+```
+SET GLOBAL general_log = 'ON';
+SET GLOBAL slow_query_log = 'ON';
+SET GLOBAL long_query_time = 0;
+SET GLOBAL log_output = 'TABLE';
+GRANT SELECT ON mysql.slow_log TO '{user}'@'localhost';
+```
+
+# Sposób użycia
+todo
