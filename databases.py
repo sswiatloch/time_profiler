@@ -10,21 +10,30 @@ class Database:
         pass
 
 
-class DatabaseFactory:
-    def create(self, conn, type):
-        pass
-
-
 class PostgresDB(Database):
     def __init__(self, uconn):
         self.pid = uconn.get_backend_pid()
-        params = uconn.info.dsn_parameterts
+        self.uconn = uconn
         self.conn = psycopg2.connect(database=uconn.info.dbname, user=uconn.info.user,
                                      password=uconn.info.password, host=uconn.info.host, port=uconn.info.port)
+        self.cur = self.conn.cursor()
         self.timestamp = datetime.now()
 
     def get_query_time(self):
-        return None
+        self.cur.execute(
+            'CREATE TEMP TABLE tmp_log AS SELECT * FROM postgres_log WITH NO DATA')
+        self.cur.execute(
+            'COPY tmp_log FROM \'C:/Program Files/PostgreSQL/13/data/log/logfile.csv\' DELIMITERS \',\' CSV')
+        self.cur.execute(
+            'INSERT INTO postgres_log SELECT * FROM tmp_log ON CONFLICT DO NOTHING')
+        self.cur.execute('DROP TABLE tmp_log')
+        query = f'SELECT message FROM postgres_log WHERE log_time >=\'{self.timestamp}\' AND '
+        query += f'user_name=\'{self.uconn.info.user}\' AND '
+        query += f'database_name=\'{self.uconn.info.dbname}\' AND '
+        query += f'process_id={self.pid}'
+        self.cur.execute(query)
+
+        return [row[0].replace('duration: ', '') for row in self.cur.fetchall() if 'duration: ' in row[0]]
 
 
 class MysqlDB(Database):
