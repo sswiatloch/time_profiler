@@ -56,4 +56,43 @@ GRANT SELECT ON mysql.slow_log TO '{user}'@'localhost';
 ```
 
 # Sposób użycia
-todo
+Bibliotekę można używać na dwa sposoby:
+1. jako skrypt
+2. przez bezpośrednie imporotwanie modułu
+
+# Używanie skryptu
+Na początku należy udekorować wybrane funkcje dekoratorami @TimeQuery lub @ TimeExecution. Jeżeli jest używany TimeQuery, neleży również zarejestrować połączenie do bazy danych. W przypadku stosowania obu dekratorów na raz, dla lepszych wyników zaleca się używanie @TimeQuery przed @TimeExecution.
+```
+# rejestrowanie połączenia dla PostgreSQL
+conn = psycopg2.connect(...)
+TimeProfiler().register_connection(conn, tp.DBTypes.POSTGRES)
+```
+```
+# rejestrowanie połączenia dla MySQL
+conn = mysql.connector.connect(...)
+TimeProfiler().register_connection(conn, DBTypes.MYSQL, password='...')
+```
+```
+# dekorowanie funkcji
+@TimeQuery
+@TimeExecution
+def foo(a):
+    return a+1
+```
+
+Aby uruchomić program, należy wywołać:
+```
+python -m time_profiler example.py
+```
+W terminalu ukazywać się będą normalne wyniki programu oraz logi time_profiler. Na koniec zostanie wyświetlone podsumowanie.
+
+# Bezpośrdenie importowanie biblioteki
+Można również zaimportować time_profiler bezpośrednio do programu.
+```
+import time_profiler as tp
+
+@tp.TimeExecution
+def foo(a):
+    return a+1
+```
+Przy tym użyciu można normalnie wywołać program, jednak nie będzie wyświetlone podsumowanie.
