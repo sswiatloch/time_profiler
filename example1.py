@@ -1,5 +1,6 @@
 import psycopg2
 from time import sleep
+from random import randrange
 
 class ExamplePostgres:
     def __init__(self):
@@ -12,10 +13,19 @@ class ExamplePostgres:
     # decorating functions
     @TimeQuery
     @TimeExecution
-    def logic(self):
+    def query_function(self):
         self.cur.execute('SELECT * FROM category')
         sleep(1)
 
+    @TimeExecution
+    def foo(self):
+        sleep(1/randrange(1,10))
+
+    
+
 if __name__ == '__main__':
     e = ExamplePostgres()
-    e.logic()
+    e.query_function()
+
+    for _ in range(5):
+        e.foo()
