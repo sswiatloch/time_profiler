@@ -1,4 +1,3 @@
-import time_profiler as tp
 import psycopg2
 import mysql.connector as mc
 import time
@@ -13,11 +12,11 @@ import time
 
 # https://dev.mysql.com/doc/employee/en/
 conn = mc.connect(user="test", password="test", database="sakila")
-tp.TimeProfiler().register_connection(conn, tp.DBTypes.MYSQL, password='test')
+TimeProfiler().register_connection(conn, DBTypes.MYSQL)
 cur = conn.cursor()
 
-@tp.TimeQuery
-@tp.TimeExecution
+@TimeQuery
+@TimeExecution
 def foo():
     cur.execute("SELECT * FROM category")
     rows = cur.fetchall()
