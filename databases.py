@@ -4,6 +4,7 @@ from datetime import datetime
 
 
 class Database:
+    # Interface used to query a database for query time.  
     def set_timestamp(self):
         self.timestamp = datetime.now()
 
@@ -12,6 +13,7 @@ class Database:
 
 
 class PostgresDB(Database):
+    # Implementation for PostgreSQL
     def __init__(self, uconn):
         self.pid = uconn.get_backend_pid()
         self.uconn = uconn
@@ -38,6 +40,7 @@ class PostgresDB(Database):
 
 
 class MysqlDB(Database):
+    # Implementation for MySQL
     def __init__(self, uconn):
         self.pid = uconn.connection_id
         self.db = uconn.database

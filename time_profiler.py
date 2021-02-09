@@ -7,11 +7,13 @@ from functools import partial
 
 
 class DBTypes(Enum):
+    # Supported databases
     POSTGRES = 1
     MYSQL = 2
 
 
 class DatabaseFactory:
+    # Factory for Database objects
     @staticmethod
     def create(conn, dbtype):
         if dbtype == DBTypes.POSTGRES:
@@ -31,6 +33,7 @@ class TimeProfilerMeta(type):
 
 
 class TimeProfiler(metaclass=TimeProfilerMeta):
+    # Singleton 
     def __init__(self):
         self.logs = {}
         self.file = open("log.txt", 'w')
@@ -57,6 +60,7 @@ class TimeProfiler(metaclass=TimeProfilerMeta):
 
 
 class TimeQuery:
+    # Decorator timing queries inside functions
     def __init__(self, func):
         update_wrapper(self, func)
         self.func = func
@@ -80,6 +84,7 @@ class TimeQuery:
 
 
 class TimeExecution:
+    # Decorator timing execution of a function
     def __init__(self, func):
         update_wrapper(self, func)
         self.func = func
@@ -99,6 +104,7 @@ class TimeExecution:
 
 
 if __name__ == "__main__":
+    # Main script
     if len(sys.argv) == 1:
         print("Name of the program must be specified!")
     else:
