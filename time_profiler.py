@@ -33,23 +33,27 @@ class TimeProfilerMeta(type):
 class TimeProfiler(metaclass=TimeProfilerMeta):
     def __init__(self):
         self.logs = {}
-        self.file = open("log.txt", 'a')
+        self.file = open("log.txt", 'w')
 
     def register_connection(self, conn, dbtype):
         self.db = DatabaseFactory.create(conn, dbtype)
 
     def register_time(self, func_name, reg_time, reg_type):
         try:
-            self.logs[(func_name, reg_type)].append(reg_time)
+            self.logs[func_name].append((reg_time, reg_type))
         except KeyError:
-            self.logs[(func_name, reg_type)] = [reg_time]
+            self.logs[(func_name)] = [(reg_time, reg_type)]
         self.file.write(str(func_name)+" " + str(reg_time) + " "+str(reg_type) + "\n")
 
     def show_logs(self):
         for item in self.logs.items():
-            print(item[0])
-            for i in item[1]:
-                print(i)
+            print(f'Summary of function: {item[0]}')
+            execs = [x[0] for x in item[1] if x[1]=='exec']
+            queries = [x[0] for x in item[1] if x[1]=='query']
+            if len(execs) > 0:
+                print(f'Number of exeutions: {len(execs)}\nAverage execution time: {sum(execs)/len(execs):.4f} s')
+            if len(queries) > 0:
+                print(f'Number of queries: {len(queries)}\nAverage query time: {sum(queries)/len(queries):.4f} ms')
 
 
 class TimeQuery:
@@ -60,14 +64,14 @@ class TimeQuery:
 
     def __call__(self, *args, **kwargs):
         if self.tprof.db is None:
-            print("There is no connection registered! Failed to time query/queries")
+            print("[tprof] There is no connection registered! Queries will not be timed")
             return self.func(*args, **kwargs)
         else:
             self.tprof.db.set_timestamp()
             value = self.func(*args, **kwargs)
             times = self.tprof.db.get_query_time()
             for t in times:
-                print(f"Query in {self.func.__name__!r} finished in {t} ms")
+                print(f"[tprof] Query in {self.func.__name__!r} finished in {t} ms")
                 self.tprof.register_time(self.func.__name__, t, 'query')
             return value
 
@@ -86,8 +90,8 @@ class TimeExecution:
         value = self.func(*args, **kwargs)
         end_time = time.perf_counter()
         run_time = end_time - start_time
-        print(f"Finished {self.func.__name__!r} in {run_time:.4f} s")
-        self.tprof.register_time(self.func.__name__, str(run_time), 'exec')
+        print(f"[tprof] Function {self.func.__name__!r} finished in {run_time:.4f} s")
+        self.tprof.register_time(self.func.__name__, run_time, 'exec')
         return value
 
     def __get__(self, instance, owner):
