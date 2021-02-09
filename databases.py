@@ -34,19 +34,20 @@ class PostgresDB(Database):
         query += f'process_id={self.pid}'
         self.cur.execute(query)
 
-        return [row[0].replace('duration: ', '') for row in self.cur.fetchall() if 'duration: ' in row[0]]
+        return [float(row[0].replace('duration: ', '').replace(' ms', '')) for row in self.cur.fetchall() if 'duration: ' in row[0]]
 
 
 class MysqlDB(Database):
-    def __init__(self, uconn, password):
+    def __init__(self, uconn):
         self.pid = uconn.connection_id
-        self.uconn = uconn
-        self.cur = uconn.cursor()
+        self.db = uconn.database
+        self.user = uconn.user
+        self.cur = uconn.cursor(buffered=True)
         self.timestamp = datetime.now()
 
     def get_query_time(self):
-        query = f'SELECT query_time FROM mysql.slow_log WHERE user_host LIKE \'{self.uconn.user}%\' '
-        query += f'AND db = \'{self.uconn.database}\' AND thread_id = {self.pid} '
+        query = f'SELECT query_time FROM mysql.slow_log WHERE user_host LIKE \'{self.user}%\' '
+        query += f'AND db = \'{self.db}\' AND thread_id = {self.pid} '
         query += f'AND start_time >= \'{self.timestamp}\''
         self.cur.execute(query)
-        return [str(row) for row in self.cur]
+        return [row[0].microseconds/1000 for row in self.cur]
