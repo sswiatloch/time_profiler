@@ -2,6 +2,7 @@ from enum import Enum
 import databases as db
 from functools import update_wrapper
 import time
+import sys
 
 
 class DBTypes(Enum):
@@ -36,16 +37,16 @@ class TimeProfiler(metaclass=TimeProfilerMeta):
     def register_connection(self, conn, dbtype, password=''):
         self.db = DatabaseFactory.create(conn, dbtype, password='')
 
-    def register_time(self, func_name, time, reg_type):
-        self.logs.append((func_name, time, reg_type))
-        self.file.write(str(func_name)+" "+(time)+" "+str(reg_type))
+    def register_time(self, func_name, reg_time, reg_type):
+        self.logs.append((func_name, reg_time, reg_type))
+        self.file.write(str(func_name)+" "+ reg_time +" "+str(reg_type) + "\n")
 
     def show_logs(self):
         for log in self.logs:
             print(log)
 
 
-class TimeQuerry:
+class TimeQuery:
     def __init__(self, func):
         update_wrapper(self, func)
         self.func = func
@@ -59,8 +60,9 @@ class TimeQuerry:
             self.tprof.db.set_timestamp()
             value = self.func(*args, **kwargs)
             times = self.tprof.db.get_query_time()
-            for time in times:
-                print(f"Query in {self.func.__name__!r} finished in {time}")
+            for t in times:
+                print(f"Query in {self.func.__name__!r} finished in {t}")
+                self.tprof.register_time(self.func.__name__, t, 'query')
             return value
 
 
@@ -76,8 +78,16 @@ class TimeExecution:
         end_time = time.perf_counter()
         run_time = end_time - start_time
         print(f"Finished {self.func.__name__!r} in {run_time:.4f} secs")
+        self.tprof.register_time(self.func.__name__, str(run_time), 'exec')
         return value
 
 
 if __name__ == "__main__":
-    print("yay!")
+    if len(sys.argv) == 1:
+        print("Name of the program must be specified!")
+    else:
+        program = sys.argv[1]
+        exec(open(program).read())
+        print("beep")
+        TimeProfiler().show_logs()
+        print(TimeProfiler().x)
