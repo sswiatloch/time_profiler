@@ -17,5 +17,5 @@ class ExamplePostgres:
         sleep(1)
 
 if __name__ == '__main__':
-    e = Example()
+    e = ExamplePostgres()
     e.logic()
