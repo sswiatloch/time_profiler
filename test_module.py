@@ -12,7 +12,7 @@ import time
 
 # https://dev.mysql.com/doc/employee/en/
 conn = mc.connect(user="test", password="test", database="sakila")
-TimeProfiler().register_connection(conn, DBTypes.MYSQL, password='test')
+TimeProfiler().register_connection(conn, DBTypes.MYSQL)
 cur = conn.cursor()
 
 @TimeQuery

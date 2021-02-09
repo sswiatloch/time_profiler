@@ -1,0 +1,21 @@
+import mysql.connector
+from time import sleep
+
+class ExampleMySQL:
+    def __init__(self):
+        self.conn = mysql.connector.connect(user="test", password="test", database="sakila")
+        # registering connection
+        TimeProfiler().register_connection(self.conn, DBTypes.MYSQL)
+        self.cur = self.conn.cursor()
+
+    # decorating functions
+    @TimeQuery
+    @TimeExecution
+    def logic(self):
+        self.cur.execute('SELECT * FROM category')
+        self.cur.fetchall()
+        sleep(1)
+
+if __name__ == '__main__':
+    e = ExampleMySQL()
+    e.logic()
