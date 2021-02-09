@@ -32,14 +32,14 @@ class TimeProfilerMeta(type):
 class TimeProfiler(metaclass=TimeProfilerMeta):
     def __init__(self):
         self.logs = []
-        self.file = open("log.txt",'a')
+        self.file = open("log.txt", 'a')
 
     def register_connection(self, conn, dbtype, password=''):
         self.db = DatabaseFactory.create(conn, dbtype, password='')
 
     def register_time(self, func_name, reg_time, reg_type):
         self.logs.append((func_name, reg_time, reg_type))
-        self.file.write(str(func_name)+" "+ reg_time +" "+str(reg_type) + "\n")
+        self.file.write(str(func_name)+" " + reg_time + " "+str(reg_type) + "\n")
 
     def show_logs(self):
         for log in self.logs:
@@ -90,4 +90,3 @@ if __name__ == "__main__":
         exec(open(program).read())
         print("beep")
         TimeProfiler().show_logs()
-        print(TimeProfiler().x)
