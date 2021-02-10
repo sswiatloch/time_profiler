@@ -12,7 +12,7 @@ class ExampleMySQL:
     @TimeQuery
     @TimeExecution
     def logic(self):
-        self.cur.execute('SELECT * FROM category')
+        self.cur.execute('SELECT sleep(2)')
         self.cur.fetchall()
         sleep(1)
 

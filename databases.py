@@ -1,6 +1,6 @@
 import psycopg2
 import mysql.connector as mc
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 class Database:
@@ -53,4 +53,4 @@ class MysqlDB(Database):
         query += f'AND db = \'{self.db}\' AND thread_id = {self.pid} '
         query += f'AND start_time >= \'{self.timestamp}\''
         self.cur.execute(query)
-        return [row[0].microseconds/1000 for row in self.cur]
+        return [row[0] / timedelta(microseconds=1)/1000 for row in self.cur]

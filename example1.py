@@ -15,6 +15,7 @@ class ExamplePostgres:
     @TimeExecution
     def query_function(self):
         self.cur.execute('SELECT * FROM category')
+        self.cur.execute('SELECT pg_sleep(2)')
         sleep(1)
 
     @TimeExecution
