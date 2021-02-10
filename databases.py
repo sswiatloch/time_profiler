@@ -51,6 +51,6 @@ class MysqlDB(Database):
     def get_query_time(self):
         query = f'SELECT query_time FROM mysql.slow_log WHERE user_host LIKE \'{self.user}%\' '
         query += f'AND db = \'{self.db}\' AND thread_id = {self.pid} '
-        query += f'AND start_time >= \'{self.timestamp}\''
+        query += f'AND start_time >= \'{self.timestamp}\' ORDER BY start_time DESC LIMIT 1'
         self.cur.execute(query)
         return [row[0] / timedelta(microseconds=1)/1000 for row in self.cur]
