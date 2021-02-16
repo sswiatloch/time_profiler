@@ -9,6 +9,7 @@ class ExamplePostgres:
         # registering connection 
         TimeProfiler().register_connection(self.conn, DBTypes.POSTGRES)
         self.cur = self.conn.cursor()
+        self.cur.execute("SELECT 0")
 
     # decorating functions
     @TimeQuery

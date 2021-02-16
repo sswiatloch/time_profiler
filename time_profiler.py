@@ -54,7 +54,7 @@ class TimeProfiler(metaclass=TimeProfilerMeta):
             execs = [x[0] for x in item[1] if x[1]=='exec']
             queries = [x[0] for x in item[1] if x[1]=='query']
             if len(execs) > 0:
-                print(f'Number of exeutions: {len(execs)}\nAverage execution time: {sum(execs)/len(execs):.4f} s')
+                print(f'Number of executions: {len(execs)}\nAverage execution time: {sum(execs)/len(execs):.4f} s')
             if len(queries) > 0:
                 print(f'Number of queries: {len(queries)}\nAverage query time: {sum(queries)/len(queries):.4f} ms')
 
