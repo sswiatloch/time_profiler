@@ -37,11 +37,12 @@ class PostgresDB(Database):
         self.cur.execute(query)
 
         return [float(row[0].replace('duration: ', '').replace(' ms', '')) for row in self.cur.fetchall() if 'duration: ' in row[0]]
-
+    
 
 class MysqlDB(Database):
     # Implementation for MySQL
     def __init__(self, uconn):
+        uconn.cursor = self._cursor_decorator(uconn.cursor)
         self.pid = uconn.connection_id
         self.db = uconn.database
         self.user = uconn.user
@@ -51,6 +52,20 @@ class MysqlDB(Database):
     def get_query_time(self):
         query = f'SELECT query_time FROM mysql.slow_log WHERE user_host LIKE \'{self.user}%\' '
         query += f'AND db = \'{self.db}\' AND thread_id = {self.pid} '
-        query += f'AND start_time >= \'{self.timestamp}\''# ORDER BY start_time DESC LIMIT 1'
+        query += f'AND start_time >= \'{self.timestamp}\''
+        query += f'AND CONVERT(sql_text USING utf8) LIKE \'%#token\''
         self.cur.execute(query)
         return [row[0] / timedelta(microseconds=1)/1000 for row in self.cur]
+
+    def _cursor_decorator(self, func):
+        def inner_wrapper(*args, **kwargs):
+            cursor = func(*args, **kwargs)
+            cursor.execute = self._execute_decorator(cursor.execute)
+            return cursor
+        return inner_wrapper
+
+
+    def _execute_decorator(self, func):
+        def inner_wrapper(operation, params=None, multi=False):
+            return func(operation+' #token', params, multi)
+        return inner_wrapper
