@@ -7,8 +7,6 @@ class ExampleMySQL:
         # registering connection
         TimeProfiler().register_connection(self.conn, DBTypes.MYSQL)
         self.cur = self.conn.cursor()
-        self.cur.execute("SELECT 0")
-        self.cur.fetchall()
 
     # decorating functions
     @TimeQuery
@@ -21,6 +19,4 @@ class ExampleMySQL:
 if __name__ == '__main__':
     e = ExampleMySQL()
     e.logic()
-    e.logic()
-    e.logic()
-    e.logic()
+    
